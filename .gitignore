@@ -1,0 +1,33 @@
+# === Maven ===
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+# === Eclipse ===
+.classpath
+.project
+.settings/
+
+# === IntelliJ IDEA (falls du mal wechseln solltest) ===
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# === OS specific ===
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# === Logs & temp files ===
+*.log
+*.tmp
+*.swp
