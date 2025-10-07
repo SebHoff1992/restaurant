@@ -7,8 +7,18 @@ public enum OrderStatus {
 	OPEN, // Order has been placed but not yet processed
 	IN_PREPARATION, // Kitchen is working on the order
 	PREPARED, // Kitchen finished preparing the order
-	SERVED, // Customer has received the food
+//	SERVED, // Customer has received the food #STILL NEED IMPLEMENTATION
 	PAYMENT_FAILED, // Payment attempt failed
-	PAID, // Payment completed successfully
-	COMPLETED // Order fully completed
+	PAID; // Payment completed successfully
+//	COMPLETED; // Order fully completed
+
+	/** Returns true if payment is allowed in this state. */
+	public boolean canBePaid() {
+		return this == PREPARED || this == OPEN;
+	}
+
+	/** Returns true if order is already finished (no further actions allowed) */
+	public boolean isFinalized() {
+		return this == PAID;
+	}
 }

@@ -2,8 +2,8 @@ package restaurant.service;
 
 import java.util.concurrent.CompletableFuture;
 
-import restaurant.model.Order;
 import restaurant.model.Customer;
+import restaurant.model.Order;
 import restaurant.payment.Payment;
 import restaurant.payment.intern.CashRegister;
 import restaurant.util.Toolkit;
@@ -34,6 +34,14 @@ public class Waiter {
 	 */
 	public void processPayment(Customer customer, Order order, Payment payment) {
 		Toolkit.logTime.accept("Waiter processes payment for customer " + customer.getName());
+		if (order.getStatus().isFinalized()) {
+			Toolkit.logger.accept(order, "Payment attempt ignored: Order already finalized.");
+			return;
+		}
+		if (!order.getStatus().canBePaid()) {
+			Toolkit.logger.accept(order, "Payment attempt rejected: Order not ready yet (" + order.getStatus() + ")");
+			return;
+		}
 
 		boolean success = cashRegister.pay(order, payment);
 		if (!success) {

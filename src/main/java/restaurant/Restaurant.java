@@ -4,16 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import restaurant.model.OrderStatus;
-import restaurant.model.Order;
-import restaurant.model.Dish;
 import restaurant.model.Category;
 import restaurant.model.Customer;
+import restaurant.model.Dish;
 import restaurant.model.Menu;
+import restaurant.model.Order;
+import restaurant.model.OrderStatus;
 import restaurant.payment.intern.CashPayment;
 import restaurant.payment.intern.CashRegister;
+import restaurant.payment.intern.CreditCard;
 import restaurant.service.Kitchen;
 import restaurant.service.Waiter;
 import restaurant.util.Toolkit;
@@ -27,6 +31,11 @@ public class Restaurant {
 	private final Kitchen kitchen;
 	private final Waiter waiter;
 	private final CashRegister cashRegister;
+	private final List<Customer> customers = new ArrayList<>();
+	private final List<CompletableFuture<Order>> orders = new ArrayList<>();
+	public static final int MAX_CUSTOMERS = 20;
+	private final List<Integer> freeTables = IntStream.rangeClosed(1, MAX_CUSTOMERS).boxed()
+			.collect(Collectors.toList());
 
 	/** Static demo menu for the restaurant */
 	public static Menu MENU = new Menu(
@@ -34,8 +43,6 @@ public class Restaurant {
 					new Dish("Salad", Category.STARTER, 4.50), new Dish("Pasta", Category.MAIN_COURSE, 9.20),
 					new Dish("Smoothie", Category.DRINK, 3.80), new Dish("Soup", Category.STARTER, 4.00),
 					new Dish("Ice Cream", Category.DESSERT, 3.50), new Dish("Coffee", Category.DRINK, 2.50)));
-
-	private final List<CompletableFuture<Order>> orders = new ArrayList<>();
 
 	/**
 	 * Create a new restaurant with a kitchen, cash register, and waiter.
@@ -86,10 +93,116 @@ public class Restaurant {
 	}
 
 	/**
-	 * @return true if all orders are completed and marked as PAID
+	 * Simulates customers entering the restaurant asynchronously. Each customer
+	 * enters after a random 1–3 second delay and places an order shortly after 1-3
+	 * seconds of delay.
 	 */
-	private boolean allOrdersCompleted() {
-		return orders.stream().map(CompletableFuture::join).allMatch(b -> b.getStatus() == OrderStatus.PAID);
+	public void simulateCustomerEnters(int numCustomers) {
+		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			IntStream.range(1, numCustomers + 1).forEach(i -> {
+				executor.submit(() -> {
+					try {
+						// random 1–3s delay before entering
+						Thread.sleep(ThreadLocalRandom.current().nextInt(4000, 10001));
+						Customer c = Toolkit.createCustomerForFreeTable.apply(freeTables);
+						if (c == null) {
+							Toolkit.logTime.accept("Customer leaves — no tables available.");
+							return;
+						}
+						customers.add(c);
+						Toolkit.logTime
+								.accept(c.getName() + " enters the restaurant and sits at table " + c.getTableNumber());
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				});
+			});
+		}
+	}
+
+	/** Simulates one customer leaving the restaurant (after random delay) */
+	public void simulateCustomerExits(Customer customer) {
+		try {
+			Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 3001)); // wait 1–3s before leaving
+			Toolkit.logTime.accept(customer.getName() + " stands up and leaves the restaurant.");
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	/** Simulates all customers leaving (each in their own Virtual Thread) */
+	public void simulateAllCustomersExit() {
+		Toolkit.logTime.accept("Customers are starting to leave the restaurant...");
+		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			for (Customer c : customers) {
+				executor.submit(() -> simulateCustomerExits(c));
+			}
+		}
+		Toolkit.logTime.accept("All customers have left (or are on their way out).");
+		customers.clear();
+	}
+
+	/**
+	 * Simulates customers placing orders at random intervals and paying after order
+	 * is received.
+	 */
+	public void simulateOrders() {
+		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			for (Customer c : customers) {
+				executor.submit(() -> simulateOrder(c));
+			}
+		}
+	}
+
+	/** Simulates a single customer's order process including payment. */
+	public void simulateOrder(Customer customer) {
+		try {
+			// Wait randomly 1–3 seconds before ordering
+			Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 3001));
+
+			Order order = Toolkit.testOrderWithCustomer.apply(customer);
+			Toolkit.logTime.accept(customer.getName() + " is placing an order...");
+
+			CompletableFuture<Order> future = customer.placeOrder(waiter, order).thenApply(prepared -> {
+				Toolkit.logTime.accept(customer.getName() + " received the order.");
+				simulatePayment(customer);
+				return prepared;
+			});
+
+			orders.add(future);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	/** Customers pay their bills at random intervals (after ordering) */
+	public void simulatePayments() {
+		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			for (Customer c : customers) {
+				executor.submit(() -> simulatePayment(c));
+			}
+		}
+	}
+
+	/** Simulates payment after a random delay */
+	private void simulatePayment(Customer customer) {
+		try {
+
+			Thread.sleep(ThreadLocalRandom.current().nextInt(5000, 8001));
+			Toolkit.logTime.accept(customer.getName() + " wants to pay the bill.");
+			customer.pay(waiter, new CashPayment(customer.getOrder().getTotalPrice()));
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	/** Waits for all orders to complete and prints final report */
+	public void finishDay() {
+		Toolkit.logTime.accept("Waiting for all customers to finish...");
+		CompletableFuture.allOf(orders.toArray(new CompletableFuture[0])).join();
+		Toolkit.logTime.accept("All customers finished!");
+		kitchen.close();
+		printReport();
 	}
 
 	/**
@@ -136,6 +249,23 @@ public class Restaurant {
 		footer.lines().map(String::stripTrailing).forEach(System.out::println);
 	}
 
+	/** Prints daily report */
+	public void printReport2() {
+		String header = "=".repeat(30) + "\nDaily Report\n" + "=".repeat(30);
+		System.out.println(header);
+		double totalRevenue = orders.stream().map(CompletableFuture::join).mapToDouble(Order::getTotalPrice).sum();
+
+		System.out.printf("Total revenue: %.2f €%n", totalRevenue);
+		System.out.println("=".repeat(30));
+	}
+
+	/**
+	 * @return true if all orders are completed and marked as PAID
+	 */
+	private boolean allOrdersCompleted() {
+		return orders.stream().map(CompletableFuture::join).allMatch(b -> b.getStatus() == OrderStatus.PAID);
+	}
+
 	/**
 	 * Find a customer by table number from a given list of customers.
 	 */
@@ -148,12 +278,5 @@ public class Restaurant {
 	 */
 	public List<Customer> getCustomers() {
 		return orders.stream().map(CompletableFuture::join).map(Order::getCustomer).collect(Collectors.toList());
-	}
-
-	/**
-	 * Main method to run the simulation.
-	 */
-	public static void main(String[] args) {
-		new Restaurant(2).start();
 	}
 }

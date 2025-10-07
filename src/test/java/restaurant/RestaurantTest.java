@@ -3,16 +3,24 @@ package restaurant;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import restaurant.model.OrderStatus;
+import restaurant.model.Category;
+import restaurant.model.Customer;
+import restaurant.model.Dish;
+import restaurant.model.Menu;
 import restaurant.model.Order;
+import restaurant.model.OrderStatus;
+import restaurant.model.Preparation;
+import restaurant.payment.intern.CashPayment;
+import restaurant.payment.intern.CashRegister;
 import restaurant.service.Kitchen;
+import restaurant.service.Waiter;
 import restaurant.util.Toolkit;
 
 /**
@@ -24,7 +32,6 @@ public class RestaurantTest {
 	 * Demonstrates handling multiple parallel preparations with CompletableFuture.
 	 * Disabled because it's only a timing showcase and not part of automated tests.
 	 */
-	@Disabled
 	@Test
 	public void testMultiplePreparations() throws ExecutionException, InterruptedException {
 		System.out.println("Start: " + Toolkit.now.get());
@@ -89,4 +96,110 @@ public class RestaurantTest {
 		// Verify that the kitchen is really terminated
 		assertTrue(kitchen.isClosed(), "Kitchen should be terminated after close()");
 	}
+
+	@Test
+	void testSuccessfulCashPayment() {
+		Customer c = new Customer("Charlie", 1);
+		Order order = Order.create(c, List.of(new Dish("Burger", Category.MAIN_COURSE, 8.0)));
+
+		CashRegister register = new CashRegister();
+		boolean success = register.pay(order, new CashPayment(order.getTotalPrice()));
+
+		assertTrue(success);
+		assertEquals(OrderStatus.PAID, order.getStatus());
+	}
+
+	@Test
+	void testTotalPriceCalculation() {
+		Customer customer = new Customer("Alice", 1);
+		Dish d1 = new Dish("Pizza", Category.MAIN_COURSE, 10.0);
+		Dish d2 = new Dish("Salad", Category.STARTER, 5.0);
+
+		Order order = Order.create(customer, List.of(d1, d2));
+
+		assertEquals(15.0, order.getTotalPrice(), 0.01);
+	}
+
+	@Test
+	void testPlaceOrderStoresOrderInCustomer() {
+		Customer c = new Customer("Alice", 1);
+		Order o = Order.create(c, List.of(new Dish("Soup", Category.STARTER, 4.0)));
+
+		assertEquals(o, c.getOrder());
+	}
+
+	@Test
+	void testPayWithoutOrder() {
+		Customer c = new Customer("Bob", 2);
+		assertNull(c.getOrder());
+		// Just ensure it doesn't throw an exception
+		assertDoesNotThrow(() -> c.pay(new Waiter(new Kitchen(1), new CashRegister()), new CashPayment(10)));
+	}
+
+	@Test
+	void testSuccessfulPaymentFlow() throws Exception {
+		Kitchen kitchen = new Kitchen(1);
+		CashRegister register = new CashRegister();
+		Waiter waiter = new Waiter(kitchen, register);
+
+		Customer c = new Customer("Charlie", 3);
+		Order o = Order.create(c, List.of(new Dish("Pizza", Category.MAIN_COURSE, 8.0)));
+
+		CompletableFuture<Order> f = c.placeOrder(waiter, o);
+		o.setStatus(OrderStatus.PREPARED);
+		c.pay(waiter, new CashPayment(o.getTotalPrice()));
+
+		assertEquals(OrderStatus.PAID, o.getStatus());
+		kitchen.close();
+	}
+
+	@Test
+	void testByCategory() {
+		Dish d1 = new Dish("Pizza", Category.MAIN_COURSE, 8.0);
+		Dish d2 = new Dish("Soup", Category.STARTER, 4.0);
+		Menu menu = new Menu(List.of(d1, d2));
+
+		Map<Category, List<Dish>> grouped = menu.byCategory();
+
+		assertTrue(grouped.containsKey(Category.MAIN_COURSE));
+		assertTrue(grouped.containsKey(Category.STARTER));
+		assertEquals(List.of(d2), grouped.get(Category.STARTER)); // sorted by name
+	}
+
+	@Test
+	void testByPrice() {
+		Dish d1 = new Dish("Coffee", Category.DRINK, 2.5);
+		Dish d2 = new Dish("Steak", Category.MAIN_COURSE, 20.0);
+		Menu menu = new Menu(List.of(d1, d2));
+
+		Map<Boolean, List<Dish>> partitioned = menu.byPrice(10.0);
+
+		assertTrue(partitioned.get(true).contains(d1));
+		assertTrue(partitioned.get(false).contains(d2));
+	}
+
+	@Test
+	void testPreparationReturnsSameOrder() throws Exception {
+		Customer c = new Customer("Dave", 5);
+		Order o = Order.create(c, List.of(new Dish("Burger", Category.MAIN_COURSE, 7.5)));
+
+		Preparation prep = new Preparation(o, 100);
+		Order result = prep.call();
+
+		assertEquals(o, result);
+	}
+
+	@Test
+	void testDemoCustomerFlow() {
+		Restaurant r = new Restaurant(1);
+		r.start(); // runs with demo customer + order
+
+		List<Customer> customers = r.getCustomers();
+		assertFalse(customers.isEmpty());
+
+		Order order = customers.get(0).getOrder();
+		assertNotNull(order);
+		assertEquals("Peter", customers.get(0).getName());
+	}
+
 }

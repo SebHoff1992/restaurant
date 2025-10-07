@@ -91,12 +91,66 @@ public class Toolkit {
 	};
 
 	/**
+	 * Supplier: creates a random table number (1–20).
+	 */
+	private static final Supplier<Integer> randomTable = () -> {
+		return ThreadLocalRandom.current().nextInt(1, 21);
+	};
+
+	/**
+	 * Supplier: creates a random number of dishes (1–4).
+	 */
+	private static final Supplier<Integer> randomDishes = () -> {
+		return ThreadLocalRandom.current().nextInt(1, 4);
+	};
+	/**
+	 * Create a new test customer with random name and table number (1-20).
+	 */
+	public static final Supplier<Customer> testCustomer = () -> {
+		int tableNumber = randomTable.get();
+		return new Customer("TestCustomer-" + tableNumber, tableNumber);
+	};
+
+//	/**
+//	 * Function: creates a random Customer for a given list of free tables. Removes
+//	 * the chosen table from the list (marks it as occupied).
+//	 */
+//	public static final Function<List<Integer>, Customer> createCustomerForFreeTable = (freeTables) -> {
+//		if (freeTables == null || freeTables.isEmpty()) {
+//			Toolkit.logTime.accept("No free tables available — cannot create customer.");
+//			return null;
+//		}
+//
+//		int index = ThreadLocalRandom.current().nextInt(freeTables.size());
+//		int tableNumber = freeTables.remove(index); // mark table as occupied
+//
+//		String name = "Guest-" + tableNumber;
+//		return new Customer(name, tableNumber);
+//	};
+
+	/**
+	 * Function: creates a random Customer for a given list of free tables. Removes
+	 * the chosen table from the list (marks it as occupied).
+	 */
+	public static final Function<List<Integer>, Customer> createCustomerForFreeTable = (freeTables) -> {
+		synchronized (freeTables) {
+			if (freeTables.isEmpty()) {
+				Toolkit.logTime.accept("No free tables available — cannot create customer.");
+				return null;
+			}
+			int index = ThreadLocalRandom.current().nextInt(freeTables.size());
+			int tableNumber = freeTables.remove(index);
+			String name = "Guest-" + tableNumber;
+			return new Customer(name, tableNumber);
+		}
+	};
+
+	/**
 	 * Supplier: creates a random test order with 1–3 dishes and a random table
 	 * number (1–20). Also creates a test customer linked to that order.
 	 */
 	public static final Supplier<Order> testOrder = () -> {
-		int table = ThreadLocalRandom.current().nextInt(1, 21);
-		int numberOfDishes = ThreadLocalRandom.current().nextInt(1, 4);
+		int numberOfDishes = randomDishes.get();
 
 		List<Dish> dishes = new ArrayList<>();
 		for (int i = 0; i < numberOfDishes; i++) {
@@ -104,7 +158,7 @@ public class Toolkit {
 			dishes.add(Restaurant.MENU.getAllDishes().get(index));
 		}
 
-		Customer customer = new Customer("TestCustomer-" + table, table);
+		Customer customer = testCustomer.get();
 		return Order.create(customer, dishes);
 	};
 
@@ -113,7 +167,7 @@ public class Toolkit {
 	 * customer.
 	 */
 	public static final Function<Customer, Order> testOrderWithCustomer = (customer) -> {
-		int numberOfDishes = ThreadLocalRandom.current().nextInt(1, 4);
+		int numberOfDishes = randomDishes.get();
 
 		List<Dish> dishes = new ArrayList<>();
 		for (int i = 0; i < numberOfDishes; i++) {
