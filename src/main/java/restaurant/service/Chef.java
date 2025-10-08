@@ -14,6 +14,7 @@ public class Chef implements Runnable {
 	private final BlockingQueue<Order> queue;
 
 	public Chef(BlockingQueue<Order> queue) {
+		Toolkit.logTime.accept("New Chef created");
 		this.queue = queue;
 	}
 

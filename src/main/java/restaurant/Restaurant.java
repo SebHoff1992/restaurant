@@ -17,7 +17,6 @@ import restaurant.model.Order;
 import restaurant.model.OrderStatus;
 import restaurant.payment.intern.CashPayment;
 import restaurant.payment.intern.CashRegister;
-import restaurant.payment.intern.CreditCard;
 import restaurant.service.Kitchen;
 import restaurant.service.Waiter;
 import restaurant.util.Toolkit;
@@ -94,7 +93,7 @@ public class Restaurant {
 
 	/**
 	 * Simulates customers entering the restaurant asynchronously. Each customer
-	 * enters after a random 1–3 second delay and places an order shortly after 1-3
+	 * enters after a random 1–5 second delay and places an order shortly after 1-3
 	 * seconds of delay.
 	 */
 	public void simulateCustomerEnters(int numCustomers) {
@@ -102,8 +101,8 @@ public class Restaurant {
 			IntStream.range(1, numCustomers + 1).forEach(i -> {
 				executor.submit(() -> {
 					try {
-						// random 1–3s delay before entering
-						Thread.sleep(ThreadLocalRandom.current().nextInt(4000, 10001));
+						// random 1–5s delay before entering
+						Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 5001));
 						Customer c = Toolkit.createCustomerForFreeTable.apply(freeTables);
 						if (c == null) {
 							Toolkit.logTime.accept("Customer leaves — no tables available.");

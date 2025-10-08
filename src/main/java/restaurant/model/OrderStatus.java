@@ -10,11 +10,10 @@ public enum OrderStatus {
 //	SERVED, // Customer has received the food #STILL NEED IMPLEMENTATION
 	PAYMENT_FAILED, // Payment attempt failed
 	PAID; // Payment completed successfully
-//	COMPLETED; // Order fully completed
 
 	/** Returns true if payment is allowed in this state. */
 	public boolean canBePaid() {
-		return this == PREPARED || this == OPEN;
+		return this == PREPARED;
 	}
 
 	/** Returns true if order is already finished (no further actions allowed) */

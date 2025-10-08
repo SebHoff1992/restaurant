@@ -1,5 +1,6 @@
 package restaurant;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 public class LeakSimulatorTest {
 
 	@Test
+	@Disabled
 	void simulateMemoryLeak() {
 
 		// Sleep so VisualVM has time to attach

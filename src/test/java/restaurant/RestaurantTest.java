@@ -24,49 +24,42 @@ import restaurant.service.Waiter;
 import restaurant.util.Toolkit;
 
 /**
- * Integration tests for the restaurant simulation.
+ * Comprehensive integration and unit tests for the Restaurant simulation.
  */
 public class RestaurantTest {
+	/**
+	 * Test a full simulation of the restaurant, running without any exceptions.
+	 */
+	@Test
+	void testSimulationRunsWithoutException() {
+		Manager manager = new Manager("TestManager", 2);
+
+		assertDoesNotThrow(() -> {
+			manager.simulateRestaurantDay(2);
+			Thread.sleep(3000);
+			manager.closeRestaurant();
+		}, "Simulation should run without throwing exceptions.");
+	}
 
 	/**
 	 * Demonstrates handling multiple parallel preparations with CompletableFuture.
-	 * Disabled because it's only a timing showcase and not part of automated tests.
+	 * Serves as a timing showcase — not part of automated checks.
 	 */
 	@Test
 	public void testMultiplePreparations() throws ExecutionException, InterruptedException {
-		System.out.println("Start: " + Toolkit.now.get());
-
-		// Preparation 1
 		CompletableFuture<String> prep1 = CompletableFuture.supplyAsync(() -> {
-			try {
-				Thread.sleep(800); // takes 0.8s
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			return "Pizza";
-		}).thenApply(s -> s + " ready");
+			sleep(800);
+			return "Pizza ready";
+		});
 
-		// Preparation 2
 		CompletableFuture<String> prep2 = CompletableFuture.supplyAsync(() -> {
-			try {
-				Thread.sleep(1200); // takes 1.2s
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			return "Salad";
-		}).thenApply(s -> s + " ready");
+			sleep(1200);
+			return "Salad ready";
+		});
 
-		// Collect futures
-		List<CompletableFuture<String>> all = List.of(prep1, prep2);
+		CompletableFuture.allOf(prep1, prep2).join();
 
-		// Wait until all are finished
-		CompletableFuture<Void> allDone = CompletableFuture.allOf(all.toArray(new CompletableFuture[0]));
-		allDone.join();
-
-		// Gather results
-		List<String> results = all.stream().map(CompletableFuture::join).toList();
-
-		// Assertions
+		List<String> results = List.of(prep1.join(), prep2.join());
 		assertTrue(results.contains("Pizza ready"));
 		assertTrue(results.contains("Salad ready"));
 
@@ -75,32 +68,29 @@ public class RestaurantTest {
 	}
 
 	/**
-	 * Verifies that an order sent directly to the kitchen is eventually marked as
-	 * PREPARED and the kitchen can be closed cleanly.
+	 * Ensures an order sent directly to the kitchen is eventually marked as
+	 * PREPARED.
 	 */
 	@Test
 	void testOrderWithFuture() throws Exception {
 		Kitchen kitchen = new Kitchen(1);
-
 		Order order = Toolkit.testOrder.get();
-		CompletableFuture<Order> future = kitchen.acceptOrder(order);
 
-		// Wait for order to be processed
+		CompletableFuture<Order> future = kitchen.acceptOrder(order);
 		Order finished = future.get(30, TimeUnit.SECONDS);
 
 		assertEquals(OrderStatus.PREPARED, finished.getStatus());
-
-		// Close kitchen
 		kitchen.close();
-
-		// Verify that the kitchen is really terminated
 		assertTrue(kitchen.isClosed(), "Kitchen should be terminated after close()");
 	}
 
+	/**
+	 * Verifies successful cash payment updates order status to PAID.
+	 */
 	@Test
 	void testSuccessfulCashPayment() {
-		Customer c = new Customer("Charlie", 1);
-		Order order = Order.create(c, List.of(new Dish("Burger", Category.MAIN_COURSE, 8.0)));
+		Customer customer = Toolkit.testCustomer.get();
+		Order order = Toolkit.testOrderWithCustomer.apply(customer);
 
 		CashRegister register = new CashRegister();
 		boolean success = register.pay(order, new CashPayment(order.getTotalPrice()));
@@ -109,50 +99,60 @@ public class RestaurantTest {
 		assertEquals(OrderStatus.PAID, order.getStatus());
 	}
 
+	/**
+	 * Ensures total price calculation sums up all dishes correctly.
+	 */
 	@Test
 	void testTotalPriceCalculation() {
 		Customer customer = new Customer("Alice", 1);
 		Dish d1 = new Dish("Pizza", Category.MAIN_COURSE, 10.0);
 		Dish d2 = new Dish("Salad", Category.STARTER, 5.0);
-
 		Order order = Order.create(customer, List.of(d1, d2));
 
 		assertEquals(15.0, order.getTotalPrice(), 0.01);
 	}
 
+	/**
+	 * Tests that placing an order automatically stores it inside the Customer.
+	 */
 	@Test
 	void testPlaceOrderStoresOrderInCustomer() {
-		Customer c = new Customer("Alice", 1);
-		Order o = Order.create(c, List.of(new Dish("Soup", Category.STARTER, 4.0)));
-
-		assertEquals(o, c.getOrder());
+		Customer customer = new Customer("Alice", 1);
+		Order order = Order.create(customer, List.of(new Dish("Soup", Category.STARTER, 4.0)));
+		assertEquals(order, customer.getOrder());
 	}
 
+	/**
+	 * Tests that paying without any order does not crash or throw exceptions.
+	 */
 	@Test
 	void testPayWithoutOrder() {
-		Customer c = new Customer("Bob", 2);
-		assertNull(c.getOrder());
-		// Just ensure it doesn't throw an exception
-		assertDoesNotThrow(() -> c.pay(new Waiter(new Kitchen(1), new CashRegister()), new CashPayment(10)));
+		Customer customer = new Customer("Bob", 2);
+		assertNull(customer.getOrder());
+		assertDoesNotThrow(() -> customer.pay(new Waiter(new Kitchen(1), new CashRegister()), new CashPayment(10)));
 	}
 
+	/**
+	 * Simulates a successful payment flow via Waiter.
+	 */
 	@Test
 	void testSuccessfulPaymentFlow() throws Exception {
 		Kitchen kitchen = new Kitchen(1);
-		CashRegister register = new CashRegister();
-		Waiter waiter = new Waiter(kitchen, register);
+		Waiter waiter = new Waiter(kitchen, new CashRegister());
+		Customer customer = Toolkit.testCustomer.get();
+		Order order = Toolkit.testOrderWithCustomer.apply(customer);
 
-		Customer c = new Customer("Charlie", 3);
-		Order o = Order.create(c, List.of(new Dish("Pizza", Category.MAIN_COURSE, 8.0)));
+		CompletableFuture<Order> future = customer.placeOrder(waiter, order);
+		order.setStatus(OrderStatus.PREPARED);
+		customer.pay(waiter, new CashPayment(order.getTotalPrice()));
 
-		CompletableFuture<Order> f = c.placeOrder(waiter, o);
-		o.setStatus(OrderStatus.PREPARED);
-		c.pay(waiter, new CashPayment(o.getTotalPrice()));
-
-		assertEquals(OrderStatus.PAID, o.getStatus());
+		assertEquals(OrderStatus.PAID, order.getStatus());
 		kitchen.close();
 	}
 
+	/**
+	 * Validates Menu grouping by category.
+	 */
 	@Test
 	void testByCategory() {
 		Dish d1 = new Dish("Pizza", Category.MAIN_COURSE, 8.0);
@@ -163,9 +163,12 @@ public class RestaurantTest {
 
 		assertTrue(grouped.containsKey(Category.MAIN_COURSE));
 		assertTrue(grouped.containsKey(Category.STARTER));
-		assertEquals(List.of(d2), grouped.get(Category.STARTER)); // sorted by name
+		assertEquals(List.of(d2), grouped.get(Category.STARTER), "Should be sorted alphabetically");
 	}
 
+	/**
+	 * Validates partitioning by price limit.
+	 */
 	@Test
 	void testByPrice() {
 		Dish d1 = new Dish("Coffee", Category.DRINK, 2.5);
@@ -178,28 +181,43 @@ public class RestaurantTest {
 		assertTrue(partitioned.get(false).contains(d2));
 	}
 
+	/**
+	 * Ensures Preparation returns the same order instance.
+	 */
 	@Test
 	void testPreparationReturnsSameOrder() throws Exception {
-		Customer c = new Customer("Dave", 5);
-		Order o = Order.create(c, List.of(new Dish("Burger", Category.MAIN_COURSE, 7.5)));
+		Customer customer = new Customer("Dave", 5);
+		Order order = Order.create(customer, List.of(new Dish("Burger", Category.MAIN_COURSE, 7.5)));
 
-		Preparation prep = new Preparation(o, 100);
+		Preparation prep = new Preparation(order, 100);
 		Order result = prep.call();
 
-		assertEquals(o, result);
+		assertEquals(order, result);
 	}
 
+	/**
+	 * Runs the demo flow to verify Restaurant.start() executes correctly.
+	 */
 	@Test
 	void testDemoCustomerFlow() {
-		Restaurant r = new Restaurant(1);
-		r.start(); // runs with demo customer + order
+		Restaurant restaurant = new Restaurant(1);
+		restaurant.start(); // demo: creates one order and processes it fully
 
-		List<Customer> customers = r.getCustomers();
-		assertFalse(customers.isEmpty());
+		List<Customer> customers = restaurant.getCustomers();
+		assertFalse(customers.isEmpty(), "At least one demo customer should exist.");
 
 		Order order = customers.get(0).getOrder();
-		assertNotNull(order);
+		assertNotNull(order, "Customer should have an order assigned.");
 		assertEquals("Peter", customers.get(0).getName());
+	}
+
+	/** Helper: sleep without checked exception clutter */
+	private static void sleep(long ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 }

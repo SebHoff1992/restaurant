@@ -1,4 +1,6 @@
 name: Java CI with Maven
+env:
+  JAVA_TOOL_OPTIONS: "-Djdk.virtualThreadScheduler.parallelism=8 -Djdk.virtualThreadScheduler.maxPoolSize=64"
 
 on:
   push:
