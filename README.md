@@ -145,9 +145,13 @@ This ensures clean dependency boundaries and prevents *split-package* issues.
 ## 🧪 Unit Testing
 
 JUnit 5 (`junit-jupiter`) is integrated for testing:
-- `RestaurantTest` simulates multiple async orders
-- `KitchenTest` verifies order preparation
+- `RestaurantTest` End-to-end test for order lifecycle, price calculation, and customer flow using Virtual Threads
+- `OrderStatusTest` Validates allowed transitions and finalization logic in the order state machine
 - `LeakSimulatorTest` demonstrates heap growth and GC activity
+- `WaiterPaymentTest` Ensures the waiter correctly validates and processes payments
+- `ToolkitTableTest` Confirms thread-safe table assignment using functional Supplier and Function utilities
+- ``
+
 
 Run tests with:
 ```bash
