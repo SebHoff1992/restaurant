@@ -8,8 +8,8 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
-import restaurant.model.Customer;
-import restaurant.util.Toolkit;
+import restaurant.core.customer.model.Customer;
+import restaurant.infrastructure.util.Toolkit;
 
 /**
  * Tests for table allocation logic in Toolkit.

@@ -1,29 +1,26 @@
 package restaurant.auth.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import restaurant.auth.model.ERole;
 import restaurant.auth.model.Role;
 import restaurant.auth.repository.RoleRepository;
-import restaurant.auth.repository.UserRepository;
 import restaurant.auth.service.RoleService;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Provides business logic for managing roles.
  */
-@Service
+//@Service
 public class RoleServiceImpl implements RoleService {
-
-	private final UserRepository userRepository;
 
 	private final RoleRepository roleRepository;
 
-	public RoleServiceImpl(RoleRepository roleRepository, UserRepository userRepository) {
+	public RoleServiceImpl(RoleRepository roleRepository) {
 		this.roleRepository = roleRepository;
-		this.userRepository = userRepository;
 	}
 
 	@Override

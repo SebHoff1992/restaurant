@@ -10,19 +10,20 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-import restaurant.core.Restaurant;
-import restaurant.model.Category;
-import restaurant.model.Customer;
-import restaurant.model.Dish;
-import restaurant.model.Menu;
-import restaurant.model.Order;
-import restaurant.model.OrderStatus;
-import restaurant.model.Preparation;
-import restaurant.payment.CashPayment;
-import restaurant.payment.CashRegister;
-import restaurant.service.Kitchen;
-import restaurant.service.Waiter;
-import restaurant.util.Toolkit;
+import restaurant.core.customer.model.Customer;
+import restaurant.core.kitchen.model.Kitchen;
+import restaurant.core.model.Category;
+import restaurant.core.model.Dish;
+import restaurant.core.model.Menu;
+import restaurant.core.model.Preparation;
+import restaurant.core.model.Restaurant;
+import restaurant.core.order.model.Order;
+import restaurant.core.order.model.OrderStatus;
+import restaurant.core.waiter.model.Waiter;
+import restaurant.infrastructure.util.Toolkit;
+import restaurant.manager.Manager;
+import restaurant.payment.model.CashPayment;
+import restaurant.payment.model.CashRegister;
 
 /**
  * Comprehensive integration and unit tests for the Restaurant simulation.

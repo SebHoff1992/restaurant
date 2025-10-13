@@ -18,7 +18,7 @@ import restaurant.auth.service.UserService;
  * promotion. This class serves as the business layer between controller and
  * repository.
  */
-@Service
+//@Service
 public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import restaurant.model.OrderStatus;
+import restaurant.core.order.model.OrderStatus;
 
 /**
  * Unit tests for the OrderStatus enum logic.

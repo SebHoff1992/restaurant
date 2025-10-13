@@ -26,12 +26,12 @@ import restaurant.auth.model.Role;
 import restaurant.auth.model.User;
 import restaurant.auth.repository.RoleRepository;
 import restaurant.auth.repository.UserRepository;
+import restaurant.auth.security.jwt.JwtUtils;
+import restaurant.auth.security.services.UserDetailsImpl;
 import restaurant.auth.service.payload.request.LoginRequest;
 import restaurant.auth.service.payload.request.SignupRequest;
 import restaurant.auth.service.payload.response.MessageResponse;
 import restaurant.auth.service.payload.response.UserInfoResponse;
-import restaurant.security.jwt.JwtUtils;
-import restaurant.security.services.UserDetailsImpl;
 
 //for Angular Client (withCredentials)
 //@CrossOrigin(origins = "http://localhost:8081", maxAge = 3600, allowCredentials="true")

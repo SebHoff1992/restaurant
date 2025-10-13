@@ -4,15 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import restaurant.model.Category;
-import restaurant.model.Customer;
-import restaurant.model.Dish;
-import restaurant.model.Order;
-import restaurant.model.OrderStatus;
-import restaurant.payment.CashPayment;
-import restaurant.payment.CashRegister;
-import restaurant.service.Waiter;
-import restaurant.util.Toolkit;
+import restaurant.core.customer.model.Customer;
+import restaurant.core.model.Category;
+import restaurant.core.model.Dish;
+import restaurant.core.order.model.Order;
+import restaurant.core.order.model.OrderStatus;
+import restaurant.core.waiter.model.Waiter;
+import restaurant.infrastructure.util.Toolkit;
+import restaurant.payment.model.CashPayment;
+import restaurant.payment.model.CashRegister;
 
 /**
  * Tests that the Waiter only accepts valid payments.
