@@ -1,5 +1,6 @@
 package restaurant;
 
+import restaurant.core.Restaurant;
 import restaurant.util.Toolkit;
 
 public class Manager {

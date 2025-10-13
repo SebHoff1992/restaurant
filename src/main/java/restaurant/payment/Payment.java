@@ -1,7 +1,6 @@
 package restaurant.payment;
 
 import restaurant.model.Order;
-import restaurant.payment.intern.VoucherPayment;
 
 /**
  * Sealed interface for different payment methods. Only the permitted subtypes

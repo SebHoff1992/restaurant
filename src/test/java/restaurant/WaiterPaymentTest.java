@@ -2,7 +2,6 @@ package restaurant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import restaurant.model.Category;
@@ -10,9 +9,8 @@ import restaurant.model.Customer;
 import restaurant.model.Dish;
 import restaurant.model.Order;
 import restaurant.model.OrderStatus;
-import restaurant.payment.intern.CashPayment;
-import restaurant.payment.intern.CashRegister;
-import restaurant.service.Kitchen;
+import restaurant.payment.CashPayment;
+import restaurant.payment.CashRegister;
 import restaurant.service.Waiter;
 import restaurant.util.Toolkit;
 

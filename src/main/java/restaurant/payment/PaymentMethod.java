@@ -1,10 +1,5 @@
 package restaurant.payment;
 
-import restaurant.payment.intern.ApplePay;
-import restaurant.payment.intern.CashPayment;
-import restaurant.payment.intern.CreditCard;
-import restaurant.payment.intern.MobilePayment;
-
 /**
  * Base class for different payment methods. This is a sealed abstract class,
  * allowing only specific implementations.

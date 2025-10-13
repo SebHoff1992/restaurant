@@ -1,4 +1,4 @@
-package restaurant.payment.intern;
+package restaurant.payment;
 
 /**
  * Visa credit card payment option.

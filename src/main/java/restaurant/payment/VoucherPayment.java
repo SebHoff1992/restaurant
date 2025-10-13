@@ -1,4 +1,4 @@
-package restaurant.payment.intern;
+package restaurant.payment;
 
 import restaurant.model.Order;
 import restaurant.payment.Payment;

@@ -4,8 +4,8 @@ import java.util.concurrent.CompletableFuture;
 
 import restaurant.model.Customer;
 import restaurant.model.Order;
+import restaurant.payment.CashRegister;
 import restaurant.payment.Payment;
-import restaurant.payment.intern.CashRegister;
 import restaurant.util.Toolkit;
 
 /**

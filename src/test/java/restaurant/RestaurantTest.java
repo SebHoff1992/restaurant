@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
+import restaurant.core.Restaurant;
 import restaurant.model.Category;
 import restaurant.model.Customer;
 import restaurant.model.Dish;
@@ -17,8 +18,8 @@ import restaurant.model.Menu;
 import restaurant.model.Order;
 import restaurant.model.OrderStatus;
 import restaurant.model.Preparation;
-import restaurant.payment.intern.CashPayment;
-import restaurant.payment.intern.CashRegister;
+import restaurant.payment.CashPayment;
+import restaurant.payment.CashRegister;
 import restaurant.service.Kitchen;
 import restaurant.service.Waiter;
 import restaurant.util.Toolkit;

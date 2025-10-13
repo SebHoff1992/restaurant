@@ -11,9 +11,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import restaurant.Restaurant;
 import restaurant.model.Order;
 import restaurant.model.Dish;
+import restaurant.core.Restaurant;
 import restaurant.model.Customer;
 
 /**

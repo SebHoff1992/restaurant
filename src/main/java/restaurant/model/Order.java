@@ -4,13 +4,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import restaurant.util.Toolkit;
 
 /**
  * Represents an order placed by a customer at a specific table. Contains the
  * ordered dishes, current status, and an optional future for async processing.
  */
+@Entity
+@Table(name = "orders")
 public class Order {
+	@Id
 	private final int tableNumber; // mandatory field
 	private Customer customer;
 	private final List<Dish> dishes;

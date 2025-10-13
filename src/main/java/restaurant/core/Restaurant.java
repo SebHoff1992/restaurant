@@ -1,4 +1,4 @@
-package restaurant;
+package restaurant.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,8 @@ import restaurant.model.Dish;
 import restaurant.model.Menu;
 import restaurant.model.Order;
 import restaurant.model.OrderStatus;
-import restaurant.payment.intern.CashPayment;
-import restaurant.payment.intern.CashRegister;
+import restaurant.payment.CashPayment;
+import restaurant.payment.CashRegister;
 import restaurant.service.Kitchen;
 import restaurant.service.Waiter;
 import restaurant.util.Toolkit;
