@@ -6,7 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import restaurant.manager.Manager;
+import restaurant.simulation.model.Manager;
 
 /**
  * Main Spring Boot application entry point for the Restaurant system.
@@ -31,7 +31,7 @@ import restaurant.manager.Manager;
 @SpringBootApplication
 public class RestaurantApp {
 
-	@Value("${restaurant.simulation.enabled:true}")
+	@Value("${app.simulation.enabled:true}")
 	private boolean simulationEnabled;
 
 	/**
@@ -56,11 +56,11 @@ public class RestaurantApp {
 				return;
 			}
 
-			System.out.println("🍽 Starting restaurant simulation...");
-			Manager manager = new Manager("Sebastian", 1);
-			manager.simulateRestaurantDay(3);
+			System.out.println("Starting restaurant simulation...");
+			Manager manager = new Manager("Sebastian", 3);
+			manager.simulateRestaurantDay(2);
 			manager.closeRestaurant();
-			System.out.println("✅ Simulation finished successfully!");
+			System.out.println("Simulation finished successfully!");
 		};
 	}
 }

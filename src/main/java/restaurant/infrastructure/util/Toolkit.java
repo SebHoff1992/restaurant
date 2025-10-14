@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 
 import restaurant.core.customer.model.Customer;
 import restaurant.core.model.Dish;
-import restaurant.core.model.Restaurant;
 import restaurant.core.order.model.Order;
+import restaurant.simulation.Restaurant;
 
 /**
  * Collection of reusable functional interfaces and helpers for the restaurant

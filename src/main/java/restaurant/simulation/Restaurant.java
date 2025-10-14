@@ -1,4 +1,4 @@
-package restaurant.core.model;
+package restaurant.simulation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,9 @@ import java.util.stream.IntStream;
 
 import restaurant.core.customer.model.Customer;
 import restaurant.core.kitchen.model.Kitchen;
+import restaurant.core.model.Category;
+import restaurant.core.model.Dish;
+import restaurant.core.model.Menu;
 import restaurant.core.order.model.Order;
 import restaurant.core.order.model.OrderStatus;
 import restaurant.core.waiter.model.Waiter;
@@ -19,8 +22,7 @@ import restaurant.payment.model.CashPayment;
 import restaurant.payment.model.CashRegister;
 
 /**
- * Main entry point of the restaurant simulation. Coordinates kitchen, waiter,
- * customers, and payments.
+ * Coordinates kitchen, waiter, customers, and payments.
  */
 public class Restaurant {
 
@@ -181,7 +183,7 @@ public class Restaurant {
 	}
 
 	/** Simulates payment after a random delay */
-	private void simulatePayment(Customer customer) {
+	public void simulatePayment(Customer customer) {
 		try {
 
 			Thread.sleep(ThreadLocalRandom.current().nextInt(5000, 8001));
@@ -192,13 +194,60 @@ public class Restaurant {
 		}
 	}
 
-	/** Waits for all orders to complete and prints final report */
-	public void finishDay() {
+	/** Waits for all orders to complete and closes the kitchen. */
+	public void close() {
 		Toolkit.logTime.accept("Waiting for all customers to finish...");
 		CompletableFuture.allOf(orders.toArray(new CompletableFuture[0])).join();
 		Toolkit.logTime.accept("All customers finished!");
 		kitchen.close();
-		printReport();
+	}
+
+	/**
+	 * Generates the daily report as a formatted String.
+	 *
+	 * @return formatted report text
+	 */
+	public String getReport() {
+		StringBuilder sb = new StringBuilder();
+
+		String title = "Daily Report";
+		String line = "-".repeat(title.length());
+
+		// --- Header ---
+		sb.append(line).append("\n").append(title).append("\n").append(line).append("\n\n");
+
+		double totalRevenue = 0.0;
+		double totalPaid = 0.0;
+
+		for (CompletableFuture<Order> cf : orders) {
+			try {
+				Order finishedOrder = cf.get();
+
+				String statusMessage = switch (finishedOrder.getStatus()) {
+				case PAID -> {
+					totalPaid += finishedOrder.getTotalPrice();
+					yield "Order successfully completed.";
+				}
+				case PAYMENT_FAILED -> "Outstanding payment!";
+				case PREPARED -> "Not yet paid.";
+				default -> "Unknown status!";
+				};
+
+				// Append each order to the report
+				sb.append("• ").append(statusMessage).append("\n");
+				sb.append(finishedOrder.toString().indent(4)).append("\n");
+
+				totalRevenue += finishedOrder.getTotalPrice();
+			} catch (Exception e) {
+				sb.append("⚠️ Error retrieving order: ").append(e.getMessage()).append("\n");
+			}
+		}
+
+		// --- Footer ---
+		sb.append("----------------------\n").append(String.format("Total revenue:   %.2f €%n", totalRevenue))
+				.append(String.format("Total paid:      %.2f €%n", totalPaid)).append("----------------------\n");
+
+		return sb.toString();
 	}
 
 	/**
@@ -247,12 +296,7 @@ public class Restaurant {
 
 	/** Prints daily report */
 	public void printReport2() {
-		String header = "=".repeat(30) + "\nDaily Report\n" + "=".repeat(30);
-		System.out.println(header);
-		double totalRevenue = orders.stream().map(CompletableFuture::join).mapToDouble(Order::getTotalPrice).sum();
-
-		System.out.printf("Total revenue: %.2f €%n", totalRevenue);
-		System.out.println("=".repeat(30));
+		System.out.println(getReport());
 	}
 
 	/**

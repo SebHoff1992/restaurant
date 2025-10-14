@@ -1,7 +1,7 @@
-package restaurant.manager;
+package restaurant.simulation.model;
 
-import restaurant.core.model.Restaurant;
 import restaurant.infrastructure.util.Toolkit;
+import restaurant.simulation.Restaurant;
 
 public class Manager {
 
@@ -16,7 +16,7 @@ public class Manager {
 	/** Closes the restaurant at the end of the day */
 	public void closeRestaurant() {
 		Toolkit.logTime.accept(name + " wants to close the restaurant...");
-		restaurant.finishDay();
+		restaurant.close();
 		Toolkit.logTime.accept("Restaurant successfully closed by " + name + ".");
 	}
 
@@ -49,4 +49,5 @@ public class Manager {
 		manager.simulateRestaurantDay(3);
 		manager.closeRestaurant();
 	}
+
 }

@@ -1,6 +1,7 @@
 package restaurant.infrastructure.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +29,10 @@ import restaurant.auth.security.services.UserDetailsServiceImpl;
 //jsr250Enabled = true,
 //prePostEnabled = true) // by default
 public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
+
+	@Value("${app.auth.security.enabled:true}")
+	private boolean securityEnabled;
+
 	@Autowired
 	UserDetailsServiceImpl userDetailsService;
 
@@ -84,6 +89,10 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		if (!securityEnabled) {
+			http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll()).csrf(csrf -> csrf.disable());
+			return http.build();
+		}
 		http.csrf(csrf -> csrf.disable())
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

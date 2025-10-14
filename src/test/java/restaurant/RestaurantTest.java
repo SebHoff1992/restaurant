@@ -16,14 +16,14 @@ import restaurant.core.model.Category;
 import restaurant.core.model.Dish;
 import restaurant.core.model.Menu;
 import restaurant.core.model.Preparation;
-import restaurant.core.model.Restaurant;
 import restaurant.core.order.model.Order;
 import restaurant.core.order.model.OrderStatus;
 import restaurant.core.waiter.model.Waiter;
 import restaurant.infrastructure.util.Toolkit;
-import restaurant.manager.Manager;
 import restaurant.payment.model.CashPayment;
 import restaurant.payment.model.CashRegister;
+import restaurant.simulation.Restaurant;
+import restaurant.simulation.model.Manager;
 
 /**
  * Comprehensive integration and unit tests for the Restaurant simulation.
