@@ -43,11 +43,14 @@ public class ManagerServiceImpl implements ManagerService {
 	}
 
 	@Override
-	public String getReport() {
+	public String getReport(boolean isPrint) {
 		if (restaurant == null) {
 			return "No report available — simulation has not been run yet.";
 		}
-		return restaurant.getReport();
+		String report = restaurant.getReport();
+		if (isPrint)
+			Toolkit.logTime.accept(report);
+		return report;
 	}
 
 }

@@ -21,9 +21,9 @@ public class ManagerController {
 	}
 
 	@PostMapping("/start")
-	public ResponseEntity<String> simulateRestaurantDay(@RequestParam(defaultValue = "3") int chefs) {
-		managerService.simulateRestaurantDay(chefs);
-		return ResponseEntity.ok("Simulation started with " + chefs + " chefs.");
+	public ResponseEntity<String> simulateRestaurantDay(@RequestParam(defaultValue = "3") int numCustomers) {
+		managerService.simulateRestaurantDay(numCustomers);
+		return ResponseEntity.ok("Simulation started with " + numCustomers + " customers.");
 	}
 
 	@PostMapping("/close")
@@ -33,7 +33,8 @@ public class ManagerController {
 	}
 
 	@GetMapping("/report")
-	public ResponseEntity<String> getReport() {
-		return ResponseEntity.ok(managerService.getReport());
+	public ResponseEntity<String> getReport(@RequestParam(defaultValue = "false") boolean isReport) {
+		return ResponseEntity.ok(managerService.getReport(isReport));
 	}
+
 }

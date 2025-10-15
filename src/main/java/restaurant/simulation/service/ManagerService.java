@@ -5,6 +5,5 @@ public interface ManagerService {
 
 	void closeRestaurant();
 
-	String getReport();
-
+	String getReport(boolean isPrint);
 }

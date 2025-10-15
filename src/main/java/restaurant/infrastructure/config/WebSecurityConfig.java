@@ -1,7 +1,6 @@
 package restaurant.infrastructure.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -102,8 +101,9 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 		http.csrf(csrf -> csrf.disable())
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
-						.requestMatchers("/api/test/**").permitAll().anyRequest().authenticated());
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/test/**").permitAll()
+						.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml")
+						.permitAll().anyRequest().authenticated());
 
 		http.authenticationProvider(authenticationProvider());
 

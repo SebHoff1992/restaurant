@@ -28,7 +28,7 @@ import restaurant.simulation.model.Manager;
  * automatically using {@code CommandLineRunner} or via REST endpoints.
  * </p>
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = { org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class })
 public class RestaurantApp {
 
 	@Value("${app.simulation.enabled:true}")

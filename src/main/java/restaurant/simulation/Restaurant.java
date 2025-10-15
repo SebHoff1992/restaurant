@@ -246,7 +246,6 @@ public class Restaurant {
 		// --- Footer ---
 		sb.append("----------------------\n").append(String.format("Total revenue:   %.2f €%n", totalRevenue))
 				.append(String.format("Total paid:      %.2f €%n", totalPaid)).append("----------------------\n");
-
 		return sb.toString();
 	}
 
