@@ -52,7 +52,7 @@ public class RestaurantApp {
 	CommandLineRunner runSimulation() {
 		return args -> {
 			if (!simulationEnabled) {
-				System.out.println("🚫 Simulation is disabled via application.properties");
+				System.out.println("Simulation is disabled via application.properties");
 				return;
 			}
 

@@ -30,14 +30,20 @@ import restaurant.auth.security.services.UserDetailsServiceImpl;
 //prePostEnabled = true) // by default
 public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
-	@Value("${app.auth.security.enabled:true}")
-	private boolean securityEnabled;
+	private final AppProperties appProperties;
+
+//	@Value("${app.auth.security.enabled:true}")
+//	private boolean securityEnabled;
 
 	@Autowired
 	UserDetailsServiceImpl userDetailsService;
 
 	@Autowired
 	private AuthEntryPointJwt unauthorizedHandler;
+
+	public WebSecurityConfig(AppProperties appProperties) {
+		this.appProperties = appProperties;
+	}
 
 	@Bean
 	public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -89,7 +95,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		if (!securityEnabled) {
+		if (!appProperties.getAuth().getSecurity().isEnabled()) {
 			http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll()).csrf(csrf -> csrf.disable());
 			return http.build();
 		}
